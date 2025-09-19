@@ -1,0 +1,32 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pressdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  dagster:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/pressdb
+      APIFY_ACTOR_ID: <YOUR-KEY-HERE>
+      APIFY_API_TOKEN: <YOUR-KEY-HERE>
+      OPENAI_API_KEY: <YOUR-KEY-HERE>
+      DAGSTER_HOME: /app/dagster_home
+    ports:
+      - "3000:3000"
+      - "4000:4000"
+    volumes:
+      - .:/app
+    command: ["dagster", "dev", "-h", "0.0.0.0"]
+
+volumes:
+  pgdata:
